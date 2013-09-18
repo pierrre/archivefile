@@ -9,27 +9,21 @@ import (
 	"path/filepath"
 )
 
-func Archive(inPath string, outPath string, includeRootDir bool) error {
-	inFileInfo, err := os.Stat(inPath)
+func Archive(filePath string, includeRootDir bool, writer io.Writer) error {
+	fileInfo, err := os.Stat(filePath)
 	if err != nil {
 		return err
 	}
 
-	outFile, err := os.Create(outPath)
-	if err != nil {
-		return err
-	}
-	defer outFile.Close()
+	zipWriter := zip.NewWriter(writer)
 
-	zipWriter := zip.NewWriter(outFile)
-
-	inIsDir := inFileInfo.IsDir()
+	isDir := fileInfo.IsDir()
 	archivePath := ""
-	if !inIsDir || includeRootDir {
-		archivePath = inFileInfo.Name()
+	if !isDir || includeRootDir {
+		archivePath = fileInfo.Name()
 	}
 
-	err = archive(zipWriter, inPath, inIsDir, archivePath)
+	err = archive(zipWriter, filePath, isDir, archivePath)
 	if err != nil {
 		return err
 	}
@@ -42,26 +36,41 @@ func Archive(inPath string, outPath string, includeRootDir bool) error {
 	return nil
 }
 
-func archive(zipWriter *zip.Writer, inPath string, inIsDir bool, archivePath string) error {
-	if inIsDir {
-		return archiveDir(zipWriter, inPath, archivePath)
+func ArchiveFile(filePath string, includeRootDir bool, outFilePath string) error {
+	outFile, err := os.Create(outFilePath)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	err = Archive(filePath, includeRootDir, outFile)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func archive(zipWriter *zip.Writer, filePath string, isDir bool, archivePath string) error {
+	if isDir {
+		return archiveDir(zipWriter, filePath, archivePath)
 	} else {
-		return archiveFile(zipWriter, inPath, archivePath)
+		return archiveFile(zipWriter, filePath, archivePath)
 	}
 }
 
-func archiveDir(zipWriter *zip.Writer, inPath string, archivePath string) error {
-	childFileInfos, err := ioutil.ReadDir(inPath)
+func archiveDir(zipWriter *zip.Writer, filePath string, archivePath string) error {
+	childFileInfos, err := ioutil.ReadDir(filePath)
 	if err != nil {
 		return err
 	}
 
 	for _, childFileInfo := range childFileInfos {
 		childFileName := childFileInfo.Name()
-		childInPath := filepath.Join(inPath, childFileName)
+		childFilePath := filepath.Join(filePath, childFileName)
 		childArchivePath := path.Join(archivePath, childFileName)
 		childIsDir := childFileInfo.IsDir()
-		err = archive(zipWriter, childInPath, childIsDir, childArchivePath)
+		err = archive(zipWriter, childFilePath, childIsDir, childArchivePath)
 		if err != nil {
 			return err
 		}
@@ -70,17 +79,17 @@ func archiveDir(zipWriter *zip.Writer, inPath string, archivePath string) error 
 	return nil
 }
 
-func archiveFile(zipWriter *zip.Writer, inPath string, archivePath string) error {
-	inFile, err := os.Open(inPath)
+func archiveFile(zipWriter *zip.Writer, filePath string, archivePath string) error {
+	file, err := os.Open(filePath)
 	if err != nil {
 		return err
 	}
-	defer inFile.Close()
+	defer file.Close()
 	writer, err := zipWriter.Create(archivePath)
 	if err != nil {
 		return err
 	}
-	_, err = io.Copy(writer, inFile)
+	_, err = io.Copy(writer, file)
 	if err != nil {
 		return err
 	}
