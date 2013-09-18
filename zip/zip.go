@@ -25,7 +25,7 @@ func Archive(inPath string, outPath string, includeRootDir bool) error {
 
 	inIsDir := inFileInfo.IsDir()
 	archivePath := ""
-	if includeRootDir {
+	if !inIsDir || includeRootDir {
 		archivePath = inFileInfo.Name()
 	}
 
