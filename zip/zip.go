@@ -1,3 +1,4 @@
+// (Un)archive file/directory to/from file/writer/reader using "archive/zip" package
 package zip
 
 import (
@@ -10,6 +11,10 @@ import (
 	"strings"
 )
 
+// Archive a file/directory to a writer
+//
+// If inFilePath is a file, the archive will contain this file at the root.
+// If inFilePath is a directory, the archive will contain the directory's content if includeRootDir is false, or the directory if includeRootDir is true.
 func Archive(inFilePath string, includeRootDir bool, writer io.Writer) error {
 	fileInfo, err := os.Stat(inFilePath)
 	if err != nil {
@@ -37,6 +42,9 @@ func Archive(inFilePath string, includeRootDir bool, writer io.Writer) error {
 	return nil
 }
 
+// Archive a file/directory to a file
+//
+// See Archive() doc
 func ArchiveFile(inFilePath string, includeRootDir bool, outFilePath string) error {
 	outFile, err := os.Create(outFilePath)
 	if err != nil {
@@ -100,6 +108,11 @@ func archiveFile(zipWriter *zip_impl.Writer, inFilePath string, archivePath stri
 	return nil
 }
 
+// Unarchive a reader to a directory
+//
+// The data's size is required because the zip reader needs it.
+//
+// The archive's content will be extracted directly to outFilePath.
 func Unarchive(reader io.ReaderAt, readerSize int64, outFilePath string) error {
 	zipReader, err := zip_impl.NewReader(reader, readerSize)
 	if err != nil {
@@ -116,6 +129,9 @@ func Unarchive(reader io.ReaderAt, readerSize int64, outFilePath string) error {
 	return nil
 }
 
+// Unarchive a file to a directory
+//
+// See Unarchive() doc
 func UnarchiveFile(inFilePath string, outFilePath string) error {
 	inFile, err := os.Open(inFilePath)
 	if err != nil {

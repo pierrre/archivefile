@@ -20,6 +20,5 @@ http://godoc.org/github.com/pierrre/archivefile/zip
 - Github issue
 
 ## TODO
-- Documentation
 - Tests
 - Progress (channel, new methods)
