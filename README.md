@@ -18,7 +18,3 @@ http://godoc.org/github.com/pierrre/archivefile/zip
 ## Help
 - Twitter: @pierredurand87
 - Github issue
-
-## TODO
-- Tests
-- Examples
