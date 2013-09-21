@@ -15,7 +15,9 @@ import (
 //
 // If inFilePath is a file, the archive will contain this file at the root.
 // If inFilePath is a directory, the archive will contain the directory's content if includeRootDir is false, or the directory if includeRootDir is true.
-func Archive(inFilePath string, includeRootDir bool, writer io.Writer) error {
+//
+// If progress is not nil, it receives the path of each file added to the archive.
+func Archive(inFilePath string, includeRootDir bool, writer io.Writer, progress chan<- string) error {
 	fileInfo, err := os.Stat(inFilePath)
 	if err != nil {
 		return err
@@ -29,7 +31,7 @@ func Archive(inFilePath string, includeRootDir bool, writer io.Writer) error {
 		archivePath = fileInfo.Name()
 	}
 
-	err = archive(zipWriter, inFilePath, isDir, archivePath)
+	err = archive(zipWriter, inFilePath, isDir, archivePath, progress)
 	if err != nil {
 		return err
 	}
@@ -45,14 +47,14 @@ func Archive(inFilePath string, includeRootDir bool, writer io.Writer) error {
 // Archive a file/directory to a file
 //
 // See Archive() doc
-func ArchiveFile(inFilePath string, includeRootDir bool, outFilePath string) error {
+func ArchiveFile(inFilePath string, includeRootDir bool, outFilePath string, progress chan<- string) error {
 	outFile, err := os.Create(outFilePath)
 	if err != nil {
 		return err
 	}
 	defer outFile.Close()
 
-	err = Archive(inFilePath, includeRootDir, outFile)
+	err = Archive(inFilePath, includeRootDir, outFile, progress)
 	if err != nil {
 		return err
 	}
@@ -60,15 +62,15 @@ func ArchiveFile(inFilePath string, includeRootDir bool, outFilePath string) err
 	return nil
 }
 
-func archive(zipWriter *zip_impl.Writer, inFilePath string, isDir bool, archivePath string) error {
+func archive(zipWriter *zip_impl.Writer, inFilePath string, isDir bool, archivePath string, progress chan<- string) error {
 	if isDir {
-		return archiveDir(zipWriter, inFilePath, archivePath)
+		return archiveDir(zipWriter, inFilePath, archivePath, progress)
 	} else {
-		return archiveFile(zipWriter, inFilePath, archivePath)
+		return archiveFile(zipWriter, inFilePath, archivePath, progress)
 	}
 }
 
-func archiveDir(zipWriter *zip_impl.Writer, inFilePath string, archivePath string) error {
+func archiveDir(zipWriter *zip_impl.Writer, inFilePath string, archivePath string, progress chan<- string) error {
 	childFileInfos, err := ioutil.ReadDir(inFilePath)
 	if err != nil {
 		return err
@@ -79,7 +81,7 @@ func archiveDir(zipWriter *zip_impl.Writer, inFilePath string, archivePath strin
 		childFilePath := filepath.Join(inFilePath, childFileName)
 		childArchivePath := path.Join(archivePath, childFileName)
 		childIsDir := childFileInfo.IsDir()
-		err = archive(zipWriter, childFilePath, childIsDir, childArchivePath)
+		err = archive(zipWriter, childFilePath, childIsDir, childArchivePath, progress)
 		if err != nil {
 			return err
 		}
@@ -88,7 +90,11 @@ func archiveDir(zipWriter *zip_impl.Writer, inFilePath string, archivePath strin
 	return nil
 }
 
-func archiveFile(zipWriter *zip_impl.Writer, inFilePath string, archivePath string) error {
+func archiveFile(zipWriter *zip_impl.Writer, inFilePath string, archivePath string, progress chan<- string) error {
+	if progress != nil {
+		progress <- archivePath
+	}
+
 	file, err := os.Open(inFilePath)
 	if err != nil {
 		return err
@@ -113,14 +119,16 @@ func archiveFile(zipWriter *zip_impl.Writer, inFilePath string, archivePath stri
 // The data's size is required because the zip reader needs it.
 //
 // The archive's content will be extracted directly to outFilePath.
-func Unarchive(reader io.ReaderAt, readerSize int64, outFilePath string) error {
+//
+// If progress is not nil, it receives the path of each file extracted from the archive.
+func Unarchive(reader io.ReaderAt, readerSize int64, outFilePath string, progress chan<- string) error {
 	zipReader, err := zip_impl.NewReader(reader, readerSize)
 	if err != nil {
 		return err
 	}
 
 	for _, zipFile := range zipReader.File {
-		err := unarchiveFile(zipFile, outFilePath)
+		err := unarchiveFile(zipFile, outFilePath, progress)
 		if err != nil {
 			return err
 		}
@@ -132,7 +140,7 @@ func Unarchive(reader io.ReaderAt, readerSize int64, outFilePath string) error {
 // Unarchive a file to a directory
 //
 // See Unarchive() doc
-func UnarchiveFile(inFilePath string, outFilePath string) error {
+func UnarchiveFile(inFilePath string, outFilePath string, progress chan<- string) error {
 	inFile, err := os.Open(inFilePath)
 	if err != nil {
 		return err
@@ -145,7 +153,7 @@ func UnarchiveFile(inFilePath string, outFilePath string) error {
 	}
 	inFileSize := inFileInfo.Size()
 
-	err = Unarchive(inFile, inFileSize, outFilePath)
+	err = Unarchive(inFile, inFileSize, outFilePath, progress)
 	if err != nil {
 		return err
 	}
@@ -153,9 +161,13 @@ func UnarchiveFile(inFilePath string, outFilePath string) error {
 	return nil
 }
 
-func unarchiveFile(zipFile *zip_impl.File, outFilePath string) error {
+func unarchiveFile(zipFile *zip_impl.File, outFilePath string, progress chan<- string) error {
 	if zipFile.FileInfo().IsDir() {
 		return nil
+	}
+
+	if progress != nil {
+		progress <- zipFile.Name
 	}
 
 	reader, err := zipFile.Open()

@@ -21,4 +21,4 @@ http://godoc.org/github.com/pierrre/archivefile/zip
 
 ## TODO
 - Tests
-- Progress (channel, new methods)
+- Examples
