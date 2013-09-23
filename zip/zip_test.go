@@ -5,28 +5,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"sync"
 )
 
 func ExampleArchive() {
 	buffer := new(bytes.Buffer)
 
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
-	progress := make(chan string)
-	go func() {
-		for p := range progress {
-			fmt.Println(p)
-		}
-		wg.Done()
-	}()
+	progress := func(filePath string) {
+		fmt.Println(filePath)
+	}
 
 	err := Archive("testdata/foo", true, buffer, progress)
 	if err != nil {
 		panic(err)
 	}
-	close(progress)
-	wg.Wait()
 
 	// Output:
 	// foo/bar
@@ -46,22 +37,14 @@ func ExampleUnarchive() {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
-	progress := make(chan string)
-	go func() {
-		for p := range progress {
-			fmt.Println(p)
-		}
-		wg.Done()
-	}()
+	progress := func(filePath string) {
+		fmt.Println(filePath)
+	}
 
 	err = Unarchive(reader, int64(reader.Len()), tmpDir, progress)
 	if err != nil {
 		panic(err)
 	}
-	close(progress)
-	wg.Wait()
 
 	// Output:
 	// foo/bar
