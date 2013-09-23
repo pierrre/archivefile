@@ -14,7 +14,7 @@ func ExampleArchive() {
 		fmt.Println(filePath)
 	}
 
-	err := Archive("testdata/foo", true, buffer, progress)
+	err := Archive("testdata/foo", buffer, progress)
 	if err != nil {
 		panic(err)
 	}
