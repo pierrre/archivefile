@@ -10,8 +10,8 @@ import (
 func ExampleArchive() {
 	buffer := new(bytes.Buffer)
 
-	progress := func(filePath string) {
-		fmt.Println(filePath)
+	progress := func(archivePath string) {
+		fmt.Println(archivePath)
 	}
 
 	err := Archive("testdata/foo", buffer, progress)
@@ -37,8 +37,8 @@ func ExampleUnarchive() {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	progress := func(filePath string) {
-		fmt.Println(filePath)
+	progress := func(archivePath string) {
+		fmt.Println(archivePath)
 	}
 
 	err = Unarchive(reader, int64(reader.Len()), tmpDir, progress)

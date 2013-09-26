@@ -169,4 +169,4 @@ func unarchiveFile(zipFile *zip_impl.File, outFilePath string, progress Progress
 	return nil
 }
 
-type ProgressFunc func(filePath string)
+type ProgressFunc func(archivePath string)
