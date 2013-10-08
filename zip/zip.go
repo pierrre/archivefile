@@ -1,4 +1,4 @@
-// (Un)archive file/directory to/from file/writer/reader using "archive/zip" package
+// Package zip provides a helper for the archive/zip package (archive/unarchive to/from a file/reader/writer)
 package zip
 
 import (
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// Archive a file/directory to a writer
+// Archive compresses a file/directory to a writer
 //
 // If the path ends with a separator, then the contents of the folder at that path
 // are at the root level of the archive, otherwise, the root of the archive contains
@@ -68,7 +68,7 @@ func Archive(inFilePath string, writer io.Writer, progress ProgressFunc) error {
 	return nil
 }
 
-// Archive a file/directory to a file
+// ArchiveFile compresses a file/directory to a file
 //
 // See Archive() doc
 func ArchiveFile(inFilePath string, outFilePath string, progress ProgressFunc) error {
@@ -86,7 +86,7 @@ func ArchiveFile(inFilePath string, outFilePath string, progress ProgressFunc) e
 	return nil
 }
 
-// Unarchive a reader to a directory
+// Unarchive decompresses a reader to a directory
 //
 // The data's size is required because the zip reader needs it.
 //
@@ -109,7 +109,7 @@ func Unarchive(reader io.ReaderAt, readerSize int64, outFilePath string, progres
 	return nil
 }
 
-// Unarchive a file to a directory
+// UnarchiveFile decompresses a file to a directory
 //
 // See Unarchive() doc
 func UnarchiveFile(inFilePath string, outFilePath string, progress ProgressFunc) error {
@@ -169,4 +169,5 @@ func unarchiveFile(zipFile *zip_impl.File, outFilePath string, progress Progress
 	return nil
 }
 
+// ProgressFunc is the type of the function called for each archive file.
 type ProgressFunc func(archivePath string)
