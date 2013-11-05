@@ -1,20 +1,26 @@
 package zip
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
-func ExampleArchive() {
-	buffer := new(bytes.Buffer)
+func ExampleArchiveFile() {
+	tmpDir, err := ioutil.TempDir("", "test_zip")
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	outFilePath := filepath.Join(tmpDir, "foo.zip")
 
 	progress := func(archivePath string) {
 		fmt.Println(archivePath)
 	}
 
-	err := Archive("testdata/foo", buffer, progress)
+	err = ArchiveFile("testdata/foo", outFilePath, progress)
 	if err != nil {
 		panic(err)
 	}
@@ -24,13 +30,7 @@ func ExampleArchive() {
 	// foo/baz/aaa
 }
 
-func ExampleUnarchive() {
-	data, err := ioutil.ReadFile("testdata/foo.zip")
-	if err != nil {
-		panic(err)
-	}
-	reader := bytes.NewReader(data)
-
+func ExampleUnarchiveFile() {
 	tmpDir, err := ioutil.TempDir("", "test_zip")
 	if err != nil {
 		panic(err)
@@ -41,7 +41,7 @@ func ExampleUnarchive() {
 		fmt.Println(archivePath)
 	}
 
-	err = Unarchive(reader, int64(reader.Len()), tmpDir, progress)
+	err = UnarchiveFile("testdata/foo.zip", tmpDir, progress)
 	if err != nil {
 		panic(err)
 	}
