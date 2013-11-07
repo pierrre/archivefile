@@ -7,6 +7,9 @@ A helper library for the Go (Golang) "archive" package that allows to (un)archiv
 
 Only the "archive/zip" package is supported (?)
 
+## Status
+[![Build Status](https://travis-ci.org/pierrre/archivefile.png?branch=master)](https://travis-ci.org/pierrre/archivefile)
+
 ## Usage
 Import `github.com/pierrre/archivefile/zip` in your code.
 
