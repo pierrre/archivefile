@@ -11,4 +11,6 @@ before_install:
 
 script:
   - go test -v -cover ./...
+  - echo $PATH
+  - ls $GOPATH/bin
   - golint .
