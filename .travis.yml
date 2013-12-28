@@ -7,6 +7,7 @@ go:
 before_install:
   - go get -v code.google.com/p/go.tools/cmd/cover
   - go get -v github.com/golang/lint/golint
+  - export PATH=$PATH:$GOPATH/bin
 
 script:
   - go test -v -cover ./...
