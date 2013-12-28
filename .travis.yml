@@ -7,10 +7,8 @@ go:
 before_install:
   - go get -v code.google.com/p/go.tools/cmd/cover
   - go get -v github.com/golang/lint/golint
-  - export PATH=$PATH:$GOPATH/bin
+  - export PATH=$PATH:/home/travis/gopath/bin #ugly hack
 
 script:
   - go test -v -cover ./...
-  - echo $PATH
-  - ls $GOPATH/bin
   - golint .
