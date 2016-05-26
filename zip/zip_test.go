@@ -12,7 +12,9 @@ func ExampleArchiveFile() {
 	if err != nil {
 		panic(err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		_ = os.RemoveAll(tmpDir)
+	}()
 
 	outFilePath := filepath.Join(tmpDir, "foo.zip")
 
@@ -35,7 +37,9 @@ func ExampleUnarchiveFile() {
 	if err != nil {
 		panic(err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		_ = os.RemoveAll(tmpDir)
+	}()
 
 	progress := func(archivePath string) {
 		fmt.Println(archivePath)

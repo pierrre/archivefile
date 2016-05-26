@@ -42,7 +42,9 @@ func Archive(inFilePath string, writer io.Writer, progress ProgressFunc) error {
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		defer func() {
+			_ = file.Close()
+		}()
 
 		zipFileWriter, err := zipWriter.Create(archivePath)
 		if err != nil {
@@ -76,7 +78,9 @@ func ArchiveFile(inFilePath string, outFilePath string, progress ProgressFunc) e
 	if err != nil {
 		return err
 	}
-	defer outFile.Close()
+	defer func() {
+		_ = outFile.Close()
+	}()
 
 	err = Archive(inFilePath, outFile, progress)
 	if err != nil {
@@ -117,7 +121,9 @@ func UnarchiveFile(inFilePath string, outFilePath string, progress ProgressFunc)
 	if err != nil {
 		return err
 	}
-	defer inFile.Close()
+	defer func() {
+		_ = inFile.Close()
+	}()
 
 	inFileInfo, err := inFile.Stat()
 	if err != nil {
@@ -146,7 +152,9 @@ func unarchiveFile(zipFile *zip_impl.File, outFilePath string, progress Progress
 	if err != nil {
 		return err
 	}
-	defer zipFileReader.Close()
+	defer func() {
+		_ = zipFileReader.Close()
+	}()
 
 	filePath := filepath.Join(outFilePath, filepath.Join(strings.Split(zipFile.Name, "/")...))
 
@@ -159,7 +167,9 @@ func unarchiveFile(zipFile *zip_impl.File, outFilePath string, progress Progress
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	_, err = io.Copy(file, zipFileReader)
 	if err != nil {
