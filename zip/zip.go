@@ -52,22 +52,13 @@ func Archive(inFilePath string, writer io.Writer, progress ProgressFunc) error {
 		}
 
 		_, err = io.Copy(zipFileWriter, file)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return err
 	})
 	if err != nil {
 		return err
 	}
 
-	err = zipWriter.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return zipWriter.Close()
 }
 
 // ArchiveFile compresses a file/directory to a file
@@ -82,12 +73,7 @@ func ArchiveFile(inFilePath string, outFilePath string, progress ProgressFunc) e
 		_ = outFile.Close()
 	}()
 
-	err = Archive(inFilePath, outFile, progress)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return Archive(inFilePath, outFile, progress)
 }
 
 // Unarchive decompresses a reader to a directory
@@ -131,12 +117,7 @@ func UnarchiveFile(inFilePath string, outFilePath string, progress ProgressFunc)
 	}
 	inFileSize := inFileInfo.Size()
 
-	err = Unarchive(inFile, inFileSize, outFilePath, progress)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return Unarchive(inFile, inFileSize, outFilePath, progress)
 }
 
 func unarchiveFile(zipFile *zip_impl.File, outFilePath string, progress ProgressFunc) error {
@@ -172,11 +153,7 @@ func unarchiveFile(zipFile *zip_impl.File, outFilePath string, progress Progress
 	}()
 
 	_, err = io.Copy(file, zipFileReader)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // ProgressFunc is the type of the function called for each archive file.
