@@ -22,7 +22,7 @@ func ExampleArchiveFile() {
 		fmt.Println(archivePath)
 	}
 
-	err = ArchiveFile("testdata/foo", outFilePath, progress)
+	err = ArchiveFile("testdata/foo", outFilePath, nil, progress)
 	if err != nil {
 		panic(err)
 	}

@@ -3,6 +3,7 @@ package zip
 
 import (
 	zip_impl "archive/zip"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -16,8 +17,11 @@ import (
 // are at the root level of the archive, otherwise, the root of the archive contains
 // the folder as its only item (with contents inside).
 //
+// If ignorePaths is not nil, the Archive will ignore all of the paths that contain
+// the strings defined in ignorePaths
+//
 // If progress is not nil, it is called for each file added to the archive.
-func Archive(inFilePath string, writer io.Writer, progress ProgressFunc) error {
+func Archive(inFilePath string, writer io.Writer, ignorePaths []string, progress ProgressFunc) error {
 	zipWriter := zip_impl.NewWriter(writer)
 
 	basePath := filepath.Dir(inFilePath)
@@ -25,6 +29,22 @@ func Archive(inFilePath string, writer io.Writer, progress ProgressFunc) error {
 	err := filepath.Walk(inFilePath, func(filePath string, fileInfo os.FileInfo, err error) error {
 		if err != nil || fileInfo.IsDir() {
 			return err
+		}
+
+		// Ignore aliases
+		fileMode := fileInfo.Mode()
+		fileModeStr := fmt.Sprint(fileMode)
+		if strings.Contains(fileModeStr, "L") {
+			return err
+		}
+
+		// Ignore specified paths
+		if ignorePaths != nil {
+			for _, b := range ignorePaths {
+				if strings.Contains(filePath, b) {
+					return err
+				}
+			}
 		}
 
 		relativeFilePath, err := filepath.Rel(basePath, filePath)
@@ -64,7 +84,7 @@ func Archive(inFilePath string, writer io.Writer, progress ProgressFunc) error {
 // ArchiveFile compresses a file/directory to a file
 //
 // See Archive() doc
-func ArchiveFile(inFilePath string, outFilePath string, progress ProgressFunc) error {
+func ArchiveFile(inFilePath string, outFilePath string, ignorePaths []string, progress ProgressFunc) error {
 	outFile, err := os.Create(outFilePath)
 	if err != nil {
 		return err
@@ -73,7 +93,7 @@ func ArchiveFile(inFilePath string, outFilePath string, progress ProgressFunc) e
 		_ = outFile.Close()
 	}()
 
-	return Archive(inFilePath, outFile, progress)
+	return Archive(inFilePath, outFile, ignorePaths, progress)
 }
 
 // Unarchive decompresses a reader to a directory
